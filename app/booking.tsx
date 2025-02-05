@@ -1,5 +1,5 @@
 // app/booking.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   View, 
   Text, 
@@ -7,13 +7,13 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   ScrollView, 
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BookingDTO } from './types/BookingDTO';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const BACKEND_HOST = "3.67.172.45:8080";
 
@@ -24,6 +24,7 @@ export default function BookingScreen() {
   const userId = params.userId ? Number(params.userId) : 1;
   const flatId = params.flatId ? Number(params.flatId) : null;
 
+  const [flatName, setFlatName] = useState<string | null>(null); 
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,32 @@ export default function BookingScreen() {
   const [userEmail, setUserEmail] = useState(params.userEmail || '');
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+  const [flatImage, setFlatImage] = useState<string | null>(null); 
+  
 
+  useEffect(() => {
+    const fetchFlatDetails = async () => {
+      try {
+        const response = await fetch(`http://${BACKEND_HOST}/api/flats/${flatId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch flat details');
+        }
+        const data = await response.json();
+        setFlatName(data.name);
+        setFlatImage(data.images?.length > 0 ? data.images[0] : null); 
+
+      } catch (error) {
+        console.error('Error fetching flat details:', error);
+        setFlatName("Unknown Flat"); 
+        setFlatImage(null);
+      }
+    };
+
+    if (flatId) {
+      fetchFlatDetails();
+    }
+  }, [flatId]);
+  
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
@@ -103,6 +129,7 @@ export default function BookingScreen() {
       }
 
       await response.json();
+      alert('Booking confirmed!');
       router.back();
     } catch (error: any) {
       setErrorMessage(error.message || "An error occurred while submitting your booking.");
@@ -113,9 +140,15 @@ export default function BookingScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Book Your Stay</Text>
-      <Text style={styles.title}>Book Flat #{flatId || 'N/A'}</Text>
-      
+        <>
+          <Text style={styles.title}>Book: {flatName}</Text>
+          {flatImage ? (
+              <Image source={{ uri: flatImage }} style={styles.flatImage} />
+            ) : (
+              <Image source={{ uri: 'https://via.placeholder.com/300' }} style={styles.flatImage} />
+            )}
+    
+        </>
       <Text style={styles.label}>User Email:</Text>
       <TextInput
         style={styles.input}
@@ -126,46 +159,18 @@ export default function BookingScreen() {
         autoCapitalize="none"
       />
 
-      {/* Start Date Picker */}
       <Text style={styles.label}>Start Date:</Text>
-      <TouchableOpacity
-        style={styles.dateInput}
-        onPress={() => setShowStartPicker(true)}
-      >
-        <Text style={styles.dateText}>
-          {startDate ? startDate.toISOString().split('T')[0] : 'Select Start Date'}
-        </Text>
-        
+      <TouchableOpacity style={styles.dateInput} onPress={() => setShowStartPicker(true)}>
+        <Text style={styles.dateText}>{startDate ? startDate.toISOString().split('T')[0] : 'Select Start Date'}</Text>
       </TouchableOpacity>
+      {showStartPicker && <DateTimePicker value={startDate || new Date()} mode="date" onChange={onChangeStartDate} />}
 
-      {showStartPicker && (
-        <DateTimePicker
-          value={startDate || new Date()}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={onChangeStartDate}
-        />
-      )}
-
-      {/* End Date Picker */}
       <Text style={styles.label}>End Date:</Text>
-      <TouchableOpacity
-        style={styles.dateInput}
-        onPress={() => setShowEndPicker(true)}
-      >
-        <Text style={styles.dateText}>
-          {endDate ? endDate.toISOString().split('T')[0] : 'Select End Date'}
-        </Text>
+      <TouchableOpacity style={styles.dateInput} onPress={() => setShowEndPicker(true)}>
+        <Text style={styles.dateText}>{endDate ? endDate.toISOString().split('T')[0] : 'Select End Date'}</Text>
       </TouchableOpacity>
+      {showEndPicker && <DateTimePicker value={endDate || new Date()} mode="date" onChange={onChangeEndDate} />}
 
-      {showEndPicker && (
-        <DateTimePicker
-          value={endDate || new Date()}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={onChangeEndDate}
-        />
-      )}
 
       {errorMessage ? (
         <Text style={styles.errorText}>{errorMessage}</Text>
@@ -191,6 +196,13 @@ const styles = StyleSheet.create({
     padding: 8, 
     marginTop: 8, 
     borderRadius: 4 
+  },
+  flatImage: {
+    width: '100%', 
+    height: 150, 
+    borderRadius: 8,
+    marginBottom: 8,
+    resizeMode: 'cover',
   },
   bookButton: {
     backgroundColor: 'green',
