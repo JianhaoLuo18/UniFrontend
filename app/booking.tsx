@@ -6,10 +6,14 @@ import {
   TextInput, 
   TouchableOpacity, 
   StyleSheet, 
-  ScrollView 
+  ScrollView, 
+  Platform
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BookingDTO } from './types/BookingDTO';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const BACKEND_HOST = "3.67.172.45:8080";
 
@@ -20,16 +24,51 @@ export default function BookingScreen() {
 
   // Use hard-coded user data if not provided.
   const userId = params.userId ? Number(params.userId) : 1;
-  const userEmail = params.userEmail || 'john.doe@example.com';
   const flatId = params.flatId ? Number(params.flatId) : null;
 
   // Local state for booking dates and error message.
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [userEmail, setUserEmail] = useState(params.userEmail || '');
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const onChangeStartDate = (event: any, selectedDate?: Date) => {
+    setShowStartPicker(false); // Close the picker
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  };
+
+  const onChangeEndDate = (event: any, selectedDate?: Date) => {
+    setShowEndPicker(false); // Close the picker
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
+  
   const handleBooking = async () => {
+
+    if (!userEmail || !isValidEmail(userEmail)) {
+      setErrorMessage('Please enter a valid email.');
+      return;
+    }
+
+    // Store user email in AsyncStorage
+    try {
+      await AsyncStorage.setItem('userEmail', userEmail);
+      console.log("✅ User email saved:", userEmail);
+    } catch (error) {
+      console.error("Error storing user email:", error);
+    }
+
+
     // Validate that startDate and endDate are provided.
     if (!startDate || !endDate) {
       setErrorMessage('Start Date and End Date cannot be empty.');
@@ -48,8 +87,8 @@ export default function BookingScreen() {
       flatId: flatId,
       userId: userId,
       userEmail: userEmail,
-      startDate, // Expected in ISO format, e.g., "2025-03-01"
-      endDate,   // Expected in ISO format, e.g., "2025-03-10"
+      startDate: startDate ? startDate.toISOString().split('T')[0] : '', // Convert to "YYYY-MM-DD"
+      endDate: endDate ? endDate.toISOString().split('T')[0] : '',     // Convert to "YYYY-MM-DD"
       status: 'ACTIVE',
       system: 'Flatly'
     };
@@ -81,26 +120,59 @@ export default function BookingScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      <Text style={styles.title}>Book Your Stay</Text>
       <Text style={styles.title}>Book Flat #{flatId || 'N/A'}</Text>
       
       <Text style={styles.label}>User Email:</Text>
-      <Text style={styles.value}>{userEmail}</Text>
-
-      <Text style={styles.label}>Start Date (YYYY-MM-DD):</Text>
       <TextInput
         style={styles.input}
-        placeholder="2025-03-01"
-        value={startDate}
-        onChangeText={setStartDate}
+        placeholder="Enter your email"
+        value={userEmail}
+        onChangeText={setUserEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
 
-      <Text style={styles.label}>End Date (YYYY-MM-DD):</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="2025-03-10"
-        value={endDate}
-        onChangeText={setEndDate}
-      />
+      {/* Start Date Picker */}
+      <Text style={styles.label}>Start Date:</Text>
+      <TouchableOpacity
+        style={styles.dateInput}
+        onPress={() => setShowStartPicker(true)}
+      >
+        <Text style={styles.dateText}>
+          {startDate ? startDate.toISOString().split('T')[0] : 'Select Start Date'}
+        </Text>
+        
+      </TouchableOpacity>
+
+      {showStartPicker && (
+        <DateTimePicker
+          value={startDate || new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={onChangeStartDate}
+        />
+      )}
+
+      {/* End Date Picker */}
+      <Text style={styles.label}>End Date:</Text>
+      <TouchableOpacity
+        style={styles.dateInput}
+        onPress={() => setShowEndPicker(true)}
+      >
+        <Text style={styles.dateText}>
+          {endDate ? endDate.toISOString().split('T')[0] : 'Select End Date'}
+        </Text>
+      </TouchableOpacity>
+
+      {showEndPicker && (
+        <DateTimePicker
+          value={endDate || new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={onChangeEndDate}
+        />
+      )}
 
       {errorMessage ? (
         <Text style={styles.errorText}>{errorMessage}</Text>
@@ -145,4 +217,13 @@ const styles = StyleSheet.create({
     marginTop: 12, 
     textAlign: 'center' 
   },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  dateText: { fontSize: 16, color: '#333' },
 });

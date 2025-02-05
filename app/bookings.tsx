@@ -1,24 +1,34 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { BookingDTO } from './types/BookingDTO';
 import BookingCard from './components/BookingCard';
 
 const BACKEND_HOST = "3.67.172.45:8080";
 // Hard-coded user email for demo purposes.
-const USER_EMAIL = "john.doe@example.com";
 
 export default function BookingSummaryScreen() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
   const router = useRouter();
+
+  
 
   // Fetch active bookings by user email.
   const fetchActiveBookings = useCallback(async () => {
     setLoading(true);
     try {
-      const url = `http://${BACKEND_HOST}/api/bookings/active?userEmail=${encodeURIComponent(USER_EMAIL)}`;
+      const storedEmail = await AsyncStorage.getItem('userEmail');
+      if (storedEmail) {
+        console.log("📡 Retrieved stored email:", storedEmail);
+        setUserEmail(storedEmail); // ✅ Set the state with the retrieved email
+      }
+
+      const url = `http://${BACKEND_HOST}/api/bookings/active?userEmail=${storedEmail}`;
+
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch bookings.');
@@ -50,7 +60,13 @@ export default function BookingSummaryScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Active Bookings</Text>
-      {loading && !refreshing ? (
+
+      {/* If no email is found, prompt the user to book first */}
+      {!userEmail ? (
+        <Text style={styles.noBookingsText}>
+          You haven't made a booking yet. Please book a flat to see your active bookings.
+        </Text>
+      ) : loading && !refreshing ? (
         <ActivityIndicator size="large" color="#007BFF" />
       ) : bookings.length === 0 ? (
         <Text style={styles.noBookingsText}>No active bookings found.</Text>
@@ -59,7 +75,7 @@ export default function BookingSummaryScreen() {
           data={bookings}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <BookingCard booking={item} onCancel={handleCancelRefresh} />
+            <BookingCard booking={item} />
           )}
           contentContainerStyle={styles.listContainer}
           refreshControl={

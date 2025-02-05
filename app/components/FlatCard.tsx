@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   thumbnail: {
-    width: 120,    // Adjust width as needed
-    height: 90,    // Adjust height as needed
+    width: '100%',    // Adjust width as needed
+    height: 150,    // Adjust height as needed
     borderRadius: 8,
     marginBottom: 8,
     resizeMode: 'cover',
