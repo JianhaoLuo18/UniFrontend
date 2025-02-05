@@ -6,7 +6,6 @@ import { BookingDTO } from './types/BookingDTO';
 import BookingCard from './components/BookingCard';
 
 const BACKEND_HOST = "3.67.172.45:8080";
-// Hard-coded user email for demo purposes.
 
 export default function BookingSummaryScreen() {
   const [bookings, setBookings] = useState<BookingDTO[]>([]);
@@ -15,16 +14,13 @@ export default function BookingSummaryScreen() {
   const [userEmail, setUserEmail] = useState<string>('');
   const router = useRouter();
 
-  
-
-  // Fetch active bookings by user email.
-  const fetchActiveBookings = useCallback(async () => {
+    const fetchActiveBookings = useCallback(async () => {
     setLoading(true);
     try {
       const storedEmail = await AsyncStorage.getItem('userEmail');
       if (storedEmail) {
         console.log("📡 Retrieved stored email:", storedEmail);
-        setUserEmail(storedEmail); // ✅ Set the state with the retrieved email
+        setUserEmail(storedEmail); 
       }
 
       const url = `http://${BACKEND_HOST}/api/bookings/active?userEmail=${storedEmail}`;
@@ -47,7 +43,6 @@ export default function BookingSummaryScreen() {
     fetchActiveBookings();
   }, [fetchActiveBookings]);
 
-  // Callback passed to BookingCard to refresh list after cancellation.
   const handleCancelRefresh = () => {
     fetchActiveBookings();
   };
@@ -61,7 +56,6 @@ export default function BookingSummaryScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Your Active Bookings</Text>
 
-      {/* If no email is found, prompt the user to book first */}
       {!userEmail ? (
         <Text style={styles.noBookingsText}>
           You haven't made a booking yet. Please book a flat to see your active bookings.

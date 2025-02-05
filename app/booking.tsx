@@ -18,15 +18,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BACKEND_HOST = "3.67.172.45:8080";
 
 export default function BookingScreen() {
-  // Retrieve booking-related parameters from the route.
   const params = useLocalSearchParams() as { flatId: string; userId: string; userEmail: string };
   const router = useRouter();
 
-  // Use hard-coded user data if not provided.
   const userId = params.userId ? Number(params.userId) : 1;
   const flatId = params.flatId ? Number(params.flatId) : null;
 
-  // Local state for booking dates and error message.
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,14 +37,14 @@ export default function BookingScreen() {
   };
 
   const onChangeStartDate = (event: any, selectedDate?: Date) => {
-    setShowStartPicker(false); // Close the picker
+    setShowStartPicker(false); 
     if (selectedDate) {
       setStartDate(selectedDate);
     }
   };
 
   const onChangeEndDate = (event: any, selectedDate?: Date) => {
-    setShowEndPicker(false); // Close the picker
+    setShowEndPicker(false); 
     if (selectedDate) {
       setEndDate(selectedDate);
     }
@@ -60,7 +57,6 @@ export default function BookingScreen() {
       return;
     }
 
-    // Store user email in AsyncStorage
     try {
       await AsyncStorage.setItem('userEmail', userEmail);
       console.log("✅ User email saved:", userEmail);
@@ -69,7 +65,6 @@ export default function BookingScreen() {
     }
 
 
-    // Validate that startDate and endDate are provided.
     if (!startDate || !endDate) {
       setErrorMessage('Start Date and End Date cannot be empty.');
       return;
@@ -82,7 +77,6 @@ export default function BookingScreen() {
       return;
     }
 
-    // Construct the booking data payload.
     const bookingData: BookingDTO = {
       flatId: flatId,
       userId: userId,
@@ -109,7 +103,6 @@ export default function BookingScreen() {
       }
 
       await response.json();
-      // Optionally, you could display a success message here.
       router.back();
     } catch (error: any) {
       setErrorMessage(error.message || "An error occurred while submitting your booking.");

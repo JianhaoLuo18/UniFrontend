@@ -15,15 +15,12 @@ import { FlatDTO } from './types/FlatDTO';
 import FlatCard from './components/FlatCard';
 
 const BACKEND_HOST = "3.67.172.45:8080";
-const { width } = Dimensions.get('window'); // Get device width
+const { width } = Dimensions.get('window'); 
 
 export default function HomeScreen() {
   const [flats, setFlats] = useState<FlatDTO[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);  // Toggle for filters
-
-
-  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState('');
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
@@ -66,7 +63,6 @@ export default function HomeScreen() {
     }
   };
 
-  // Fetch all flats on component mount
   React.useEffect(() => {
     fetchFlats();
   }, []);
@@ -75,12 +71,10 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Search for Flats</Text>
     
-      {/* Filter Toggle Button */}
       <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={styles.filterButton}>
         <Text style={styles.filterButtonText}>{showFilters ? 'Hide Filters' : 'Show Filters'}</Text>
       </TouchableOpacity>
 
-      {/* Show Filters Only If User Clicks */}
       {showFilters && (
         <View style={styles.filtersContainer}>
           <TextInput

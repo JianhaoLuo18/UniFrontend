@@ -15,17 +15,16 @@ const BACKEND_HOST = "3.67.172.45:8080";
 
 interface BookingCardProps {
   booking: BookingDTO;
-  onCancel?: () => void; // Optional callback to update the booking list after cancellation.
+  onCancel?: () => void; 
 }
 
 export default function BookingCard({ booking, onCancel }: BookingCardProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>("");
-  const [flatName, setFlatName] = useState<string | null>(null); // ✅ Flat name state
-  const [flatImage, setFlatImage] = useState<string | null>(null); // ✅ Store the flat image
+  const [flatName, setFlatName] = useState<string | null>(null); 
+  const [flatImage, setFlatImage] = useState<string | null>(null); 
 
-  // ✅ Fetch Flat Name When Component Mounts
   useEffect(() => {
     const fetchFlatDetails = async () => {
       try {
@@ -34,12 +33,12 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
           throw new Error("Failed to fetch flat details");
         }
         const flatData = await response.json();
-        setFlatName(flatData.name); // ✅ Set the flat name
-        setFlatImage(flatData.images?.length > 0 ? flatData.images[0] : null); // ✅ Get the first image
+        setFlatName(flatData.name); 
+        setFlatImage(flatData.images?.length > 0 ? flatData.images[0] : null); 
 
       } catch (error) {
         console.error("Error fetching flat details:", error);
-        setFlatName("Unknown Flat"); // Handle missing data gracefully
+        setFlatName("Unknown Flat"); 
         setFlatImage(null);
 
       }
@@ -52,7 +51,6 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
 
 
   const handleCancel = async () => {
-    // Clear any previous messages.
     setMessage("");
     setLoading(true);
 
@@ -67,14 +65,11 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
         throw new Error(`Cancellation failed: ${errorText}`);
       }
 
-      // Update message on success.
       setMessage("Booking cancelled successfully.");
-      // Call the optional callback to update the booking list.
       if (onCancel) {
         onCancel();
       }
     } catch (error: any) {
-      // Update message with error details.
       setMessage(error.message || "Cancellation failed.");
     } finally {
       setLoading(false);
@@ -82,8 +77,6 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
   };
 
   const handleViewFlatDetails = () => {
-    // Navigate to the flat detail screen using booking.flatId.
-    // This assumes your flat detail route is defined as /flat/[id].
     if (booking.flatId) {
       router.push(`/flat/${booking.flatId}`);
     } else {
@@ -94,18 +87,15 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{flatName}</Text>
-      {/* 🔹 Display Flat Image */}
       {flatImage ? (
         <Image source={{ uri: flatImage }} style={styles.flatImage} />
       ) : (
         <Image source={{ uri: 'https://via.placeholder.com/300' }} style={styles.flatImage} />
       )}
-      {/* Removed User Email and System from display */}
       <Text style={styles.detail}>Start Date: {booking.startDate}</Text>
       <Text style={styles.detail}>End Date: {booking.endDate}</Text>
       <Text style={styles.detail}>Status: {booking.status}</Text>
 
-      {/* Display feedback message in red text */}
       {message ? (
         <Text style={styles.message}>{message}</Text>
       ) : null}
@@ -118,7 +108,6 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
         )}
       </TouchableOpacity>
 
-      {/* New button to view flat details */}
       <TouchableOpacity onPress={handleViewFlatDetails} style={styles.detailButton}>
         <Text style={styles.detailButtonText}>View Flat Details</Text>
       </TouchableOpacity>

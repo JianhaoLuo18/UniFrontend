@@ -10,22 +10,17 @@ interface FlatCardProps {
 
 const BACKEND_HOST = "3.67.172.45:8080";
 
-// Helper function to correctly get the full image URL.
 const getImageUrl = (img: string) => {
-  // If the image URL already starts with http, return it directly.
   if (img.startsWith("http")) {
     return img;
   }
-  // Otherwise, assume it's a relative path that needs the backend host prepended.
   return `http://${BACKEND_HOST}/${img}`;
 };
 
 const FlatCard: React.FC<FlatCardProps> = ({ flat }) => {
-  // Get the first image as a thumbnail if available.
   const thumbnail = flat.images && flat.images.length > 0 ? getImageUrl(flat.images[0]) : null;
 
   return (
-    // asChild makes the TouchableOpacity the clickable element
     <Link href={`/flat/${flat.id}`} asChild state={flat}>
       <TouchableOpacity style={styles.card}>
         {thumbnail && (
@@ -56,8 +51,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   thumbnail: {
-    width: '100%',    // Adjust width as needed
-    height: 150,    // Adjust height as needed
+    width: '100%',    
+    height: 150,   
     borderRadius: 8,
     marginBottom: 8,
     resizeMode: 'cover',
