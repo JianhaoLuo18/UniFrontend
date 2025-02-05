@@ -52,15 +52,24 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
     }
   };
 
+  const handleViewFlatDetails = () => {
+    // Navigate to the flat detail screen using booking.flatId.
+    // This assumes your flat detail route is defined as /flat/[id].
+    if (booking.flatId) {
+      router.push(`/flat/${booking.flatId}`);
+    } else {
+      setMessage("Flat details are not available for this booking.");
+    }
+  };
+
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Booking #{booking.id}</Text>
       <Text style={styles.detail}>Flat ID: {booking.flatId}</Text>
-      <Text style={styles.detail}>User Email: {booking.userEmail}</Text>
+      {/* Removed User Email and System from display */}
       <Text style={styles.detail}>Start Date: {booking.startDate}</Text>
       <Text style={styles.detail}>End Date: {booking.endDate}</Text>
       <Text style={styles.detail}>Status: {booking.status}</Text>
-      <Text style={styles.detail}>System: {booking.system}</Text>
 
       {/* Display feedback message in red text */}
       {message ? (
@@ -73,6 +82,11 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
         ) : (
           <Text style={styles.cancelButtonText}>Cancel Booking</Text>
         )}
+      </TouchableOpacity>
+
+      {/* New button to view flat details */}
+      <TouchableOpacity onPress={handleViewFlatDetails} style={styles.detailButton}>
+        <Text style={styles.detailButtonText}>View Flat Details</Text>
       </TouchableOpacity>
     </View>
   );
@@ -108,6 +122,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  detailButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    borderRadius: 6,
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  detailButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

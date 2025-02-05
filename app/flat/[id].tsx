@@ -6,7 +6,8 @@ import {
   StyleSheet, 
   ScrollView, 
   ActivityIndicator, 
-  TouchableOpacity 
+  TouchableOpacity,
+  Image
 } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { FlatDTO } from '../../types/FlatDTO';
@@ -19,6 +20,16 @@ export default function FlatDetailScreen() {
   const navigation = useNavigation();
   const [flat, setFlat] = useState<FlatDTO | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Helper function to correctly determine the image URL.
+  const getImageUrl = (img: string) => {
+    // If the image URL already starts with http, return it directly.
+    if (img.startsWith("http")) {
+      return img;
+    }
+    // Otherwise, assume it's a relative URL from the backend.
+    return `http://${BACKEND_HOST}/${img}`;
+  };
 
   useEffect(() => {
     const fetchFlatDetails = async () => {
@@ -41,18 +52,18 @@ export default function FlatDetailScreen() {
     }
   }, [id]);
 
-  // Update the header title to the flat's location (or name)
+  // Update the header title to the flat's name.
   useEffect(() => {
     if (flat) {
-      navigation.setOptions({ title: flat.location });
+      navigation.setOptions({ title: flat.name });
     }
   }, [flat, navigation]);
 
   // Handler for the "Book Now" button.
   const handleBook = () => {
     // Fixed user context
-    // Navigate to the booking page, passing the flatId and user details.
-    navigation.navigate('booking', { flatId: flat?.id});
+    // Navigate to the booking page, passing the flatId.
+    navigation.navigate('booking', { flatId: flat?.id });
   };
 
   if (loading) {
@@ -73,8 +84,25 @@ export default function FlatDetailScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Flat Details</Text>
+      {/* Display the flat name as the main title */}
+      <Text style={styles.title}>{flat.name}</Text>
       
+      {/* Display Images if available */}
+      {flat.images && flat.images.length > 0 && (
+        <>
+          <Text style={styles.label}>Images:</Text>
+          <ScrollView horizontal style={styles.imagesContainer}>
+            {flat.images.map((img, index) => (
+              <Image
+                key={index}
+                source={{ uri: getImageUrl(img) }}
+                style={styles.image}
+              />
+            ))}
+          </ScrollView>
+        </>
+      )}
+
       <Text style={styles.label}>Location:</Text>
       <Text style={styles.value}>{flat.location}</Text>
       
@@ -125,5 +153,15 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  imagesContainer: {
+    marginVertical: 12,
+  },
+  image: {
+    width: 300,
+    height: 200,
+    marginRight: 10,
+    borderRadius: 8,
+    resizeMode: 'cover',
   },
 });

@@ -62,12 +62,14 @@ export default function HomeScreen() {
       <TextInput
         style={styles.input}
         placeholder="Enter location"
+        placeholderTextColor="#666"
         value={locationFilter}
         onChangeText={setLocationFilter}
       />
       <TextInput
         style={styles.input}
         placeholder="Min Price"
+        placeholderTextColor="#666"
         value={minPrice ? minPrice.toString() : ''}
         keyboardType="numeric"
         onChangeText={(text) => setMinPrice(Number(text))}
@@ -75,6 +77,7 @@ export default function HomeScreen() {
       <TextInput
         style={styles.input}
         placeholder="Max Price"
+        placeholderTextColor="#666"
         value={maxPrice ? maxPrice.toString() : ''}
         keyboardType="numeric"
         onChangeText={(text) => setMaxPrice(Number(text))}
@@ -82,6 +85,7 @@ export default function HomeScreen() {
       <TextInput
         style={styles.input}
         placeholder="Room Number"
+        placeholderTextColor="#666"
         value={roomNumberFilter ? roomNumberFilter.toString() : ''}
         keyboardType="numeric"
         onChangeText={(text) => setRoomNumberFilter(Number(text))}
@@ -89,6 +93,7 @@ export default function HomeScreen() {
       <TextInput
         style={styles.input}
         placeholder="Max Distance (km)"
+        placeholderTextColor="#666"
         value={selectedDistance ? selectedDistance.toString() : ''}
         keyboardType="numeric"
         onChangeText={(text) => setSelectedDistance(Number(text))}
@@ -118,7 +123,7 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     padding: 16, 
-    backgroundColor: '#FFF' 
+    backgroundColor: '#f2f2f2'  // Updated background color
   },
   title: { 
     fontSize: 20, 
@@ -128,9 +133,11 @@ const styles = StyleSheet.create({
   input: { 
     borderWidth: 1, 
     borderColor: '#ccc', 
+    backgroundColor: '#fff', // Set a white background for text inputs
     padding: 8, 
     marginBottom: 12, 
-    borderRadius: 4 
+    borderRadius: 4,
+    color: '#000'  // Ensure text is visible
   },
   searchButton: { 
     backgroundColor: 'green', 
@@ -152,3 +159,5 @@ const styles = StyleSheet.create({
     color: '#888' 
   },
 });
+
+export default HomeScreen;
